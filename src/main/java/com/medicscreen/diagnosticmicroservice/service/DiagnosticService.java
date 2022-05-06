@@ -1,12 +1,19 @@
 package com.medicscreen.diagnosticmicroservice.service;
 
 import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigurator;
+import com.medicscreen.diagnosticmicroservice.proxies.NoteProxy;
+import com.medicscreen.diagnosticmicroservice.proxies.PatientProxy;
 import com.medicscreen.diagnosticmicroservice.proxies.beans.Note;
 import com.medicscreen.diagnosticmicroservice.proxies.beans.Patient;
+import com.medicscreen.diagnosticmicroservice.proxies.beans.Patient.PatientBuilder;
+import com.medicscreen.diagnosticmicroservice.proxies.dto.NoteDTO;
+import com.medicscreen.diagnosticmicroservice.proxies.dto.PatientDTO;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -14,27 +21,57 @@ import java.util.Locale;
 public class DiagnosticService {
 
   private final LocalDateConfigurator localDate;
+  private final PatientProxy patientProxy;
+  private final NoteProxy noteProxy;
 
-  public DiagnosticService(LocalDateConfigurator localDate) {
+  public DiagnosticService(LocalDateConfigurator localDate, PatientProxy patientProxy, NoteProxy noteProxy) {
     this.localDate = localDate;
+    this.patientProxy = patientProxy;
+    this.noteProxy = noteProxy;
   }
 
-  public String generateDiagnostic(Patient patient, List<Note> notes) {
+  public String generateDiagnostic(int patientId) {
+    Patient patient= getPatient(patientId);
+    List<Note> notes= getNotes(patientId);
+
+    String result = null;
+
     int age= calculateAge(patient);
     int marker= analyzeNote(notes);
 
-    if (marker<=1){
-      return "None";
+    if(marker<=2 | age>30 & marker==2 | age>30 & marker>=8 ){
+      result= diagnosticToCommon(age,marker);
     }
 
-    if (patient.getGender().equals("M")) {
-      return diagnosticToMan(age, marker);
+    else if (patient.getGender().equals("M")) {
+      result= diagnosticToMan(age, marker);
     }
 
-    if (patient.getGender().equals("F")){
-      return diagnosticToWoman(age, marker);
+    else if (patient.getGender().equals("F")){
+      result= diagnosticToWoman(age, marker);
     }
-    return "No result";
+    return result;
+  }
+
+  private Patient getPatient(Integer id){
+    PatientDTO patientDTO=patientProxy.getPatientDTO(id);
+    return new PatientBuilder()
+        .gender(patientDTO.getGender())
+        .dateOfBirth(LocalDate.parse(patientDTO.getDateOfBirth()))
+        .build();
+  }
+
+  private List<Note>getNotes(Integer patientId){
+    List<Note> notes=new ArrayList<>();
+    List<NoteDTO> notesDto= noteProxy.getNoteDto(patientId);
+
+    if (notesDto!=null) {
+      for (NoteDTO noteDto:notesDto){
+        Note note= new Note(noteDto.getNoteContent());
+        notes.add(note);
+      }return notes;
+    }
+    return Collections.emptyList();
   }
 
   private int calculateAge(Patient patient) {
@@ -67,34 +104,46 @@ public class DiagnosticService {
   }
 
   private String diagnosticToWoman(int age, int marker) {
-    if (age>30 & marker ==2){
-      return "Borderline";
-    }
+    String result="";
     if (age>30 & marker==6){
-      return "In Danger";
+      result= "In Danger";
     }
-    if (age<30 & marker ==4){
-      return "In Danger";
+    else if (age<30 & marker ==4){
+      result= "In Danger";
     }
-    if (age<30 & marker ==7){
-      return "Early Onset";
+    else if (age<30 & marker ==7){
+      result= "Early Onset";
     }
-    return null;
+    return result;
   }
 
   private String diagnosticToMan(int age, int marker) {
-    if (age>30 & marker ==2){
-      return "Borderline";
-    }
+    String result="";
     if (age>30 & marker==6){
-      return "In Danger";
+      result= "In Danger";
     }
-    if (age<30 & marker ==3){
-      return "In Danger";
+    else if (age<30 & marker ==3){
+      result= "In Danger";
     }
-    if (age<30 & marker == 5){
-      return "Early Onset";
+    else if (age<30 & marker == 5){
+      result= "Early Onset";
     }
-    return null;
+    return result;
+  }
+
+  private String diagnosticToCommon(int age, int marker){
+    String result=null;
+    if (marker<=1){
+      result= "None";
+    }
+
+    else if (age>30 & marker==2){
+      result= "Borderline";
+    }
+
+    else if (age>30 & marker>=8){
+      result= "Early Onset";
+    }
+    return result;
   }
 }

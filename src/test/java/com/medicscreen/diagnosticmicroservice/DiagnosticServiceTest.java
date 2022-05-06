@@ -2,10 +2,10 @@ package com.medicscreen.diagnosticmicroservice;
 
 import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigImpl;
 import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigurator;
-import com.medicscreen.diagnosticmicroservice.proxies.beans.Note;
-import com.medicscreen.diagnosticmicroservice.proxies.beans.Note.NoteBuilder;
-import com.medicscreen.diagnosticmicroservice.proxies.beans.Patient;
-import com.medicscreen.diagnosticmicroservice.proxies.beans.Patient.PatientBuilder;
+import com.medicscreen.diagnosticmicroservice.proxies.NoteProxy;
+import com.medicscreen.diagnosticmicroservice.proxies.PatientProxy;
+import com.medicscreen.diagnosticmicroservice.proxies.dto.NoteDTO;
+import com.medicscreen.diagnosticmicroservice.proxies.dto.PatientDTO;
 import com.medicscreen.diagnosticmicroservice.service.DiagnosticService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,20 +14,34 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DiagnosticServiceTest {
 
   private LocalDateConfigurator localDate= mock(LocalDateConfigImpl.class);
-  private DiagnosticService service= new DiagnosticService(localDate);
+  private PatientProxy patientProxy= mock(PatientProxy.class);
+  private NoteProxy noteProxy= mock(NoteProxy.class);
 
-  Patient patient= new PatientBuilder()
-      .firstName("John")
-      .lastName("Doe")
-      .dateOfBirth(LocalDate.of(2000,1,1))
-      .gender("M")
-      .build();
+  private DiagnosticService service= new DiagnosticService(localDate, patientProxy, noteProxy);
+
+  PatientDTO manLess30YearOld = new PatientDTO(1,"John","Doe",
+      "1995-01-01", "M", null,null);
+
+  PatientDTO womanLess30YearOld = new PatientDTO(1,"Jane","Doe",
+      "1995-01-01","F", null,null);
+
+  PatientDTO manMore30YearOld = new PatientDTO(1,"John","Doe",
+      "1985-01-01","M", null,null);
+
+  PatientDTO womanMore30YearOld = new PatientDTO(1,"Jane","Doe",
+      "1985-01-01","F", null,null);
+
+  NoteDTO noteOneMarker= new NoteDTO("2",1,"Rechute");
+  NoteDTO noteTwoMarkers= new NoteDTO("1",1,"fumeur, cholestérol");
+  NoteDTO noteThreeMarkers= new NoteDTO("3",1,"microalbumine, anormal, anticorps");
+
 
   @BeforeEach
   void setUp() {
@@ -41,12 +55,10 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatientWithoutMarkerWhenGenerateDiagnosticThenReturnNone(){
     //Given
-    Patient patient= new PatientBuilder()
-        .dateOfBirth(LocalDate.of(2000,1,1))
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(manLess30YearOld);
 
     //When
-    String actual= service.generateDiagnostic(patient,List.of());
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("None");
@@ -60,21 +72,11 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatient35YearOldWithTwoMarkersWhenGenerateDiagnosticThenReturnBorderline() {
     //Given
-    Patient patient= new PatientBuilder()
-        .gender("F")
-        .dateOfBirth(LocalDate.of(1985,1,1))
-        .build();
-
-    Note note= new NoteBuilder()
-        .noteContent("fumeur")
-        .build();
-
-    Note note1= new NoteBuilder()
-        .noteContent("cholestérol")
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(womanMore30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(patient,List.of(note1,note));
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("Borderline");
@@ -87,21 +89,11 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatientMan25YearOldWithThreeMarkersWhenGenerateDiagnosticThenReturnInDanger() {
     //Given
-    Patient patient= new PatientBuilder()
-        .gender("M")
-        .dateOfBirth(LocalDate.of(1995,1,1))
-        .build();
-
-    Note note= new NoteBuilder()
-        .noteContent("Poids, taille excessive")
-        .build();
-
-    Note note1= new NoteBuilder()
-        .noteContent("Fumeur")
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(manLess30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteOneMarker,noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(patient, List.of(note1,note));
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("In Danger");
@@ -114,21 +106,11 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatientWoman25YearOldWithFourMarkersWhenGenerateDiagnosticThenReturnInDanger() {
     //Given
-    Patient patient= new PatientBuilder()
-        .gender("F")
-        .dateOfBirth(LocalDate.of(1995,1,1))
-        .build();
-
-    Note note= new NoteBuilder()
-        .noteContent("Poids, taille excessive")
-        .build();
-
-    Note note1= new NoteBuilder()
-        .noteContent("Fumeur, vertige")
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(womanLess30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteTwoMarkers,noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(patient,List.of(note1,note));
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("In Danger");
@@ -140,21 +122,11 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatient35YearOldWithSixMarkersWhenGenerateDiagnosticThenReturnInDanger() {
     //Given
-    Patient patient= new PatientBuilder()
-        .gender("M")
-        .dateOfBirth(LocalDate.of(1985,1,1))
-        .build();
-
-    Note note= new NoteBuilder()
-        .noteContent("Poids, taille excessive, microalbumine")
-        .build();
-
-    Note note1= new NoteBuilder()
-        .noteContent("Fumeur, vertige, rechute")
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(manMore30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteThreeMarkers,noteThreeMarkers));
 
     //When
-    String actual= service.generateDiagnostic(patient,List.of(note1,note));
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("In Danger");
@@ -167,21 +139,11 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatientMan25YearOldWithFiveMarkersWhenGenerateDiagnosticThenReturnEarlyOnset() {
     //Given
-    Patient patient= new PatientBuilder()
-        .gender("M")
-        .dateOfBirth(LocalDate.of(1995,1,1))
-        .build();
-
-    Note note= new NoteBuilder()
-        .noteContent("Poids, taille excessive, microalbumine")
-        .build();
-
-    Note note1= new NoteBuilder()
-        .noteContent("Fumeur, vertige")
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(manLess30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteTwoMarkers,noteThreeMarkers));
 
     //When
-    String actual= service.generateDiagnostic(patient,List.of(note1,note));
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("Early Onset");
@@ -194,21 +156,28 @@ public class DiagnosticServiceTest {
   @Test
   void givenPatientWoman25YearOldWithSevenMarkerWhenGenerateDiagnosticThenReturnEarlyOnset() {
     //Given
-    Patient patient= new PatientBuilder()
-        .gender("F")
-        .dateOfBirth(LocalDate.of(1995,1,1))
-        .build();
-
-    Note note= new NoteBuilder()
-        .noteContent("Poids, taille excessive, microalbumine")
-        .build();
-
-    Note note1= new NoteBuilder()
-        .noteContent("Fumeur, vertige, Poids,cholestérol")
-        .build();
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(womanLess30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteThreeMarkers,noteTwoMarkers,noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(patient,List.of(note1,note));
+    String actual= service.generateDiagnostic(1);
+
+    //Then
+    assertThat(actual).isEqualTo("Early Onset");
+  }
+
+  /**
+   ○ apparition précoce (Early onset) - Si le patient a plus de 30 ans, alors il en
+   faudra huit ou plus.
+   */
+  @Test
+  void givenPatientWoman35YearOldWithNineMarkerWhenGenerateDiagnosticThenReturnEarlyOnset(){
+    //Given
+    when(patientProxy.getPatientDTO(anyInt())).thenReturn(womanMore30YearOld);
+    when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteThreeMarkers,noteThreeMarkers,noteThreeMarkers));
+
+    //When
+    String actual= service.generateDiagnostic(1);
 
     //Then
     assertThat(actual).isEqualTo("Early Onset");

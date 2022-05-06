@@ -2,39 +2,16 @@ package com.medicscreen.diagnosticmicroservice.proxies.beans;
 
 import java.time.LocalDate;
 
-
 public class Patient {
 
-  private Integer id;
-  private String firstName;
-  private String lastName;
   private LocalDate dateOfBirth;
   private String gender;
-  private String address;
-  private String phone;
 
   public Patient(){}
 
   public Patient(PatientBuilder builder) {
-    this.id= builder.id;
-    this.firstName= builder.firstName;
-    this.lastName= builder.lastName;
     this.dateOfBirth= builder.dateOfBirth;
     this.gender= builder.gender;
-    this.address= builder.address;
-    this.phone= builder.phone;
-  }
-
-  public Integer getId() {
-    return id;
-  }
-
-  public String getFirstName() {
-    return firstName;
-  }
-
-  public String getLastName() {
-    return lastName;
   }
 
   public LocalDate getDateOfBirth() {
@@ -45,37 +22,9 @@ public class Patient {
     return gender;
   }
 
-  public String getAddress() {
-    return address;
-  }
-
-  public String getPhone() {
-    return phone;
-  }
-
   public static class PatientBuilder{
-    private Integer id;
-    private String firstName;
-    private String lastName;
     private LocalDate dateOfBirth;
     private String gender;
-    private String address;
-    private String phone;
-
-    public PatientBuilder id(Integer id){
-      this.id=id;
-      return this;
-    }
-
-    public PatientBuilder firstName(String firstName){
-      this.firstName=firstName;
-      return this;
-    }
-
-    public PatientBuilder lastName(String lastName) {
-      this.lastName=lastName;
-      return this;
-    }
 
     public PatientBuilder dateOfBirth(LocalDate dateOfBirth) {
       this.dateOfBirth=dateOfBirth;
