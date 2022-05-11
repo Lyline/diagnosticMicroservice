@@ -3,6 +3,7 @@ package com.medicscreen.diagnosticmicroservice.controller;
 import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigurator;
 import com.medicscreen.diagnosticmicroservice.proxies.NoteProxy;
 import com.medicscreen.diagnosticmicroservice.proxies.PatientProxy;
+import com.medicscreen.diagnosticmicroservice.proxies.beans.Diagnostic;
 import com.medicscreen.diagnosticmicroservice.service.DiagnosticService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,8 +29,8 @@ public class DiagnosticController {
   }
 
   @GetMapping("/diagnosticAPI/{id}")
-  public ResponseEntity<String> getDiagnostic(@PathVariable int id){
-    String diagnostic=service.generateDiagnostic(id);
+  public ResponseEntity<Diagnostic> getDiagnostic(@PathVariable int id){
+    Diagnostic diagnostic=service.generateDiagnostic(id);
     return new ResponseEntity<>(diagnostic, HttpStatus.OK);
   }
 }

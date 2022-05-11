@@ -3,6 +3,7 @@ package com.medicscreen.diagnosticmicroservice.service;
 import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigurator;
 import com.medicscreen.diagnosticmicroservice.proxies.NoteProxy;
 import com.medicscreen.diagnosticmicroservice.proxies.PatientProxy;
+import com.medicscreen.diagnosticmicroservice.proxies.beans.Diagnostic;
 import com.medicscreen.diagnosticmicroservice.proxies.beans.Note;
 import com.medicscreen.diagnosticmicroservice.proxies.beans.Patient;
 import com.medicscreen.diagnosticmicroservice.proxies.beans.Patient.PatientBuilder;
@@ -30,7 +31,7 @@ public class DiagnosticService {
     this.noteProxy = noteProxy;
   }
 
-  public String generateDiagnostic(int patientId) {
+  public Diagnostic generateDiagnostic(int patientId) {
     Patient patient= getPatient(patientId);
     List<Note> notes= getNotes(patientId);
 
@@ -50,7 +51,7 @@ public class DiagnosticService {
     else if (patient.getGender().equals("F")){
       result= diagnosticToWoman(age, marker);
     }
-    return result;
+    return new Diagnostic(result);
   }
 
   private Patient getPatient(Integer id){
@@ -119,6 +120,7 @@ public class DiagnosticService {
 
   private String diagnosticToMan(int age, int marker) {
     String result="";
+
     if (age>30 & marker==6){
       result= "In Danger";
     }
