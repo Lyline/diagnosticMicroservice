@@ -40,7 +40,7 @@ public class DiagnosticService {
     int age= calculateAge(patient);
     int marker= analyzeNote(notes);
 
-    if(marker<=2 | age>30 & marker==2 | age>30 & marker>=8 ){
+    if(marker<=1 | age>30 & marker>=6 ){
       result= diagnosticToCommon(age,marker);
     }
 
@@ -106,14 +106,23 @@ public class DiagnosticService {
 
   private String diagnosticToWoman(int age, int marker) {
     String result="";
-    if (age>30 & marker==6){
-      result= "In Danger";
+
+    if(age<30){
+      if (marker>=7){
+        result= "Early Onset";
+      }
+      else if (marker>=4){
+        result= "In Danger";
+      }
+      else if(marker<=3){
+        result="Borderline";
+      }
     }
-    else if (age<30 & marker ==4){
-      result= "In Danger";
-    }
-    else if (age<30 & marker ==7){
-      result= "Early Onset";
+
+    if(age>30){
+      if (marker<=5){
+        result= "Borderline";
+      }
     }
     return result;
   }
@@ -121,31 +130,42 @@ public class DiagnosticService {
   private String diagnosticToMan(int age, int marker) {
     String result="";
 
-    if (age>30 & marker==6){
-      result= "In Danger";
+    if(age<30){
+     if (marker>=5){
+        result= "Early Onset";
+      }
+      else if (marker>=3){
+        result= "In Danger";
+      }
+      else if (marker<=2){
+        result="Borderline";
+      }
     }
-    else if (age<30 & marker ==3){
-      result= "In Danger";
-    }
-    else if (age<30 & marker == 5){
-      result= "Early Onset";
+
+    if (age>30){
+      if (marker<=5){
+        result= "Borderline";
+      }
     }
     return result;
   }
 
   private String diagnosticToCommon(int age, int marker){
-    String result=null;
+    String result="";
+
     if (marker<=1){
       result= "None";
     }
-
-    else if (age>30 & marker==2){
-      result= "Borderline";
-    }
-
-    else if (age>30 & marker>=8){
+    if (age>30){
+      if (marker>=8){
       result= "Early Onset";
+      }
+      else if(marker>=6){
+        result="In Danger";
+      }
     }
+
+
     return result;
   }
 }
