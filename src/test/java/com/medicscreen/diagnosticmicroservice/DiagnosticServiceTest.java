@@ -4,6 +4,7 @@ import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigImpl;
 import com.medicscreen.diagnosticmicroservice.configuration.LocalDateConfigurator;
 import com.medicscreen.diagnosticmicroservice.proxies.NoteProxy;
 import com.medicscreen.diagnosticmicroservice.proxies.PatientProxy;
+import com.medicscreen.diagnosticmicroservice.proxies.beans.Diagnostic;
 import com.medicscreen.diagnosticmicroservice.proxies.dto.NoteDTO;
 import com.medicscreen.diagnosticmicroservice.proxies.dto.PatientDTO;
 import com.medicscreen.diagnosticmicroservice.service.DiagnosticService;
@@ -58,10 +59,10 @@ public class DiagnosticServiceTest {
     when(patientProxy.getPatientDTO(anyInt())).thenReturn(manLess30YearOld);
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("None");
+    assertThat(actual.getDiagnostic()).isEqualTo("None");
 
   }
 
@@ -76,10 +77,10 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("Borderline");
+    assertThat(actual.getDiagnostic()).isEqualTo("Borderline");
   }
 
   /**
@@ -93,10 +94,10 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteOneMarker,noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("In Danger");
+    assertThat(actual.getDiagnostic()).isEqualTo("In Danger");
   }
 
   /**
@@ -110,10 +111,10 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteTwoMarkers,noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("In Danger");
+    assertThat(actual.getDiagnostic()).isEqualTo("In Danger");
   }
 
   /**
@@ -126,10 +127,10 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteThreeMarkers,noteThreeMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("In Danger");
+    assertThat(actual.getDiagnostic()).isEqualTo("In Danger");
   }
 
   /**
@@ -143,10 +144,10 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteTwoMarkers,noteThreeMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("Early Onset");
+    assertThat(actual.getDiagnostic()).isEqualTo("Early Onset");
   }
 
   /**
@@ -160,10 +161,10 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteThreeMarkers,noteTwoMarkers,noteTwoMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("Early Onset");
+    assertThat(actual.getDiagnostic()).isEqualTo("Early Onset");
   }
 
   /**
@@ -177,9 +178,9 @@ public class DiagnosticServiceTest {
     when(noteProxy.getNoteDto(anyInt())).thenReturn(List.of(noteThreeMarkers,noteThreeMarkers,noteThreeMarkers));
 
     //When
-    String actual= service.generateDiagnostic(1);
+    Diagnostic actual= service.generateDiagnostic(1);
 
     //Then
-    assertThat(actual).isEqualTo("Early Onset");
+    assertThat(actual.getDiagnostic()).isEqualTo("Early Onset");
   }
 }

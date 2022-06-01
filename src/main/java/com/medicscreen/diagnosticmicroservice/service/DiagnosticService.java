@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Service
 public class DiagnosticService {
@@ -35,12 +32,16 @@ public class DiagnosticService {
     Patient patient= getPatient(patientId);
     List<Note> notes= getNotes(patientId);
 
-    String result = null;
+    String result = "";
 
     int age= calculateAge(patient);
     int marker= analyzeNote(notes);
 
-    if(marker<=1 | age>30 & marker>=6 ){
+    if(notes.isEmpty() | Objects.isNull(notes)){
+      result= "None";
+    }
+
+    else if(marker<=1 | age>30 & marker>=6 ){
       result= diagnosticToCommon(age,marker);
     }
 
@@ -51,7 +52,7 @@ public class DiagnosticService {
     else if (patient.getGender().equals("F")){
       result= diagnosticToWoman(age, marker);
     }
-    return new Diagnostic(result);
+    return new Diagnostic(age,result);
   }
 
   private Patient getPatient(Integer id){
@@ -164,8 +165,6 @@ public class DiagnosticService {
         result="In Danger";
       }
     }
-
-
     return result;
   }
 }
