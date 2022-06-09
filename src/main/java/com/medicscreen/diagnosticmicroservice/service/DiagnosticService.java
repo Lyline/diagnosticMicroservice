@@ -30,37 +30,44 @@ public class DiagnosticService {
 
   public Diagnostic generateDiagnostic(int patientId) {
     Patient patient= getPatient(patientId);
-    List<Note> notes= getNotes(patientId);
 
-    String result = "";
+    if (Objects.nonNull(patient)) {
+      List<Note> notes= getNotes(patientId);
 
-    int age= calculateAge(patient);
-    int marker= analyzeNote(notes);
+      String result = "";
 
-    if(notes.isEmpty() | Objects.isNull(notes)){
-      result= "None";
+      int age= calculateAge(patient);
+      int marker= analyzeNote(notes);
+
+      if(notes.isEmpty() | Objects.isNull(notes)){
+        result= "None";
+      }
+
+      else if(marker<=1 | age>30 & marker>=6 ){
+        result= diagnosticToCommon(age,marker);
+      }
+
+      else if (patient.getGender().equals("M")) {
+        result= diagnosticToMan(age, marker);
+      }
+
+      else if (patient.getGender().equals("F")){
+        result= diagnosticToWoman(age, marker);
+      }
+      return new Diagnostic(age,result);
     }
-
-    else if(marker<=1 | age>30 & marker>=6 ){
-      result= diagnosticToCommon(age,marker);
-    }
-
-    else if (patient.getGender().equals("M")) {
-      result= diagnosticToMan(age, marker);
-    }
-
-    else if (patient.getGender().equals("F")){
-      result= diagnosticToWoman(age, marker);
-    }
-    return new Diagnostic(age,result);
+    return null;
   }
 
   private Patient getPatient(Integer id){
     PatientDTO patientDTO=patientProxy.getPatientDTO(id);
-    return new PatientBuilder()
-        .gender(patientDTO.getGender())
-        .dateOfBirth(LocalDate.parse(patientDTO.getDateOfBirth()))
-        .build();
+    if (Objects.nonNull(patientDTO)) {
+      return new PatientBuilder()
+          .gender(patientDTO.getGender())
+          .dateOfBirth(LocalDate.parse(patientDTO.getDateOfBirth()))
+          .build();
+    }
+    return null;
   }
 
   private List<Note>getNotes(Integer patientId){

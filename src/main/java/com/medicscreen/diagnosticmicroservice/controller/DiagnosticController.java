@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
+
 @RestController
 public class DiagnosticController {
 
@@ -28,9 +30,18 @@ public class DiagnosticController {
     this.noteProxy = noteProxy;
   }
 
+  @GetMapping("/diagnosticAPI")
+  public ResponseEntity<String> getWelcome(){
+    return new ResponseEntity<>("Welcome to Mediscreen Diagnostic API", HttpStatus.OK);
+  }
+
   @GetMapping("/diagnosticAPI/{id}")
   public ResponseEntity<Diagnostic> getDiagnostic(@PathVariable int id){
     Diagnostic diagnostic=service.generateDiagnostic(id);
-    return new ResponseEntity<>(diagnostic, HttpStatus.OK);
+
+    if (Objects.nonNull(diagnostic)) {
+      return new ResponseEntity<>(diagnostic, HttpStatus.OK);
+    }
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }
